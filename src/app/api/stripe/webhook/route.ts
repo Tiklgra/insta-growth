@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
-import { prisma } from "@/lib/prisma";
+import { getPrisma } from "@/lib/prisma";
 
-// Mark as dynamic to prevent static generation
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
@@ -10,12 +9,14 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "");
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET || "";
 
 export async function POST(req: NextRequest) {
+  const prisma = getPrisma();
   if (!prisma) {
-    return NextResponse.json({ error: "Database not configured" }, { status: 500 });
+    console.log("Database not configured, skipping subscription tracking");
+    return NextResponse.json({ received: true });
   }
   
   const body = await req.text();
-  const signature = req.headers.get("stripe-signature")!
+  const signature = req.headers.get("stripe-signature")!;
 
   let event: Stripe.Event;
 
@@ -32,12 +33,10 @@ export async function POST(req: NextRequest) {
       const clerkId = session.metadata?.userId;
       
       if (clerkId && session.subscription) {
-        // Get subscription details - cast to any to avoid Stripe SDK type issues
         const subscription = await stripe.subscriptions.retrieve(
           session.subscription as string
         ) as any;
         
-        // Create or update user
         const user = await prisma.user.upsert({
           where: { clerkId },
           create: {
@@ -51,7 +50,6 @@ export async function POST(req: NextRequest) {
           },
         });
 
-        // Create subscription record
         await prisma.subscription.upsert({
           where: { stripeSubscriptionId: subscription.id },
           create: {
@@ -84,8 +82,6 @@ export async function POST(req: NextRequest) {
           status: subscription.status,
         },
       });
-      
-      console.log(`Subscription ${subscription.id} updated:`, subscription.status);
       break;
     }
     
@@ -96,8 +92,6 @@ export async function POST(req: NextRequest) {
         where: { stripeSubscriptionId: subscription.id },
         data: { status: "canceled" },
       });
-      
-      console.log(`Subscription ${subscription.id} canceled`);
       break;
     }
     
@@ -110,8 +104,6 @@ export async function POST(req: NextRequest) {
           data: { status: "past_due" },
         });
       }
-      
-      console.log(`Payment failed for invoice ${invoice.id}`);
       break;
     }
   }

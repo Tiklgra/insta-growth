@@ -1,11 +1,13 @@
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
-import { prisma } from "@/lib/prisma";
+import { getPrisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 export async function GET() {
+  const prisma = getPrisma();
+  
   if (!prisma) {
     return NextResponse.json({ isSubscribed: false, subscription: null });
   }
