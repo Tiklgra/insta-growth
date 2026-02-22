@@ -24,11 +24,10 @@ export async function POST(req: NextRequest) {
       const clerkId = session.metadata?.userId;
       
       if (clerkId && session.subscription) {
-        // Get subscription details
-        const subscriptionResponse = await stripe.subscriptions.retrieve(
+        // Get subscription details - cast to any to avoid Stripe SDK type issues
+        const subscription = await stripe.subscriptions.retrieve(
           session.subscription as string
-        );
-        const subscription = subscriptionResponse as unknown as Stripe.Subscription;
+        ) as any;
         
         // Create or update user
         const user = await prisma.user.upsert({
@@ -67,7 +66,7 @@ export async function POST(req: NextRequest) {
     }
     
     case "customer.subscription.updated": {
-      const subscription = event.data.object as Stripe.Subscription;
+      const subscription = event.data.object as any;
       
       await prisma.subscription.update({
         where: { stripeSubscriptionId: subscription.id },
@@ -83,7 +82,7 @@ export async function POST(req: NextRequest) {
     }
     
     case "customer.subscription.deleted": {
-      const subscription = event.data.object as Stripe.Subscription;
+      const subscription = event.data.object as any;
       
       await prisma.subscription.update({
         where: { stripeSubscriptionId: subscription.id },
