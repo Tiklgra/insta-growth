@@ -94,7 +94,7 @@ export async function POST(req: NextRequest) {
     }
     
     case "invoice.payment_failed": {
-      const invoice = event.data.object as Stripe.Invoice;
+      const invoice = event.data.object as any;
       
       if (invoice.subscription) {
         await prisma.subscription.update({
