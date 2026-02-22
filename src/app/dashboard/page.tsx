@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 import { Sparkles, Plus, RefreshCw, Copy, ExternalLink, Check, MessageSquare, User } from "lucide-react";
 import Link from "next/link";
@@ -40,6 +40,23 @@ export default function Dashboard() {
   const [usageCount, setUsageCount] = useState(12);
   const usageLimit = 200;
   const [isSubscribing, setIsSubscribing] = useState(false);
+  const [isSubscribed, setIsSubscribed] = useState(false);
+  const [loadingSubscription, setLoadingSubscription] = useState(true);
+
+  useEffect(() => {
+    const checkSubscription = async () => {
+      try {
+        const res = await fetch("/api/subscription");
+        const data = await res.json();
+        setIsSubscribed(data.isSubscribed);
+      } catch (error) {
+        console.error("Failed to check subscription:", error);
+      } finally {
+        setLoadingSubscription(false);
+      }
+    };
+    checkSubscription();
+  }, []);
 
   const handleSubscribe = async () => {
     setIsSubscribing(true);
@@ -164,20 +181,31 @@ export default function Dashboard() {
               </p>
             </div>
 
-            {/* Upgrade CTA */}
-            <div className="bg-gradient-to-r from-pink-500/10 to-purple-500/10 border border-pink-500/20 rounded-2xl p-6">
-              <h2 className="font-semibold text-lg mb-2 text-white">Upgrade to Pro</h2>
-              <p className="text-gray-400 text-sm mb-4">
-                Get unlimited comments and premium features.
-              </p>
-              <button
-                onClick={handleSubscribe}
-                disabled={isSubscribing}
-                className="w-full bg-pink-600 hover:bg-pink-700 disabled:opacity-50 py-2 rounded-lg font-medium transition"
-              >
-                {isSubscribing ? "Loading..." : "Upgrade Now"}
-              </button>
-            </div>
+            {/* Subscription Status */}
+            {!loadingSubscription && (
+              isSubscribed ? (
+                <div className="bg-gradient-to-r from-green-500/10 to-emerald-500/10 border border-green-500/20 rounded-2xl p-6">
+                  <h2 className="font-semibold text-lg mb-2 text-white">Pro Plan Active ✓</h2>
+                  <p className="text-gray-400 text-sm">
+                    You have unlimited comments and premium features.
+                  </p>
+                </div>
+              ) : (
+                <div className="bg-gradient-to-r from-pink-500/10 to-purple-500/10 border border-pink-500/20 rounded-2xl p-6">
+                  <h2 className="font-semibold text-lg mb-2 text-white">Upgrade to Pro</h2>
+                  <p className="text-gray-400 text-sm mb-4">
+                    Get unlimited comments and premium features.
+                  </p>
+                  <button
+                    onClick={handleSubscribe}
+                    disabled={isSubscribing}
+                    className="w-full bg-pink-600 hover:bg-pink-700 disabled:opacity-50 py-2 rounded-lg font-medium transition"
+                  >
+                    {isSubscribing ? "Loading..." : "Upgrade Now"}
+                  </button>
+                </div>
+              )
+            )}
           </div>
 
           {/* Main Content - Queue */}

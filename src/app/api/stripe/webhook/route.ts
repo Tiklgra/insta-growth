@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
+import { prisma } from "@/lib/prisma";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!;
@@ -17,36 +18,91 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
   }
 
-  // Handle subscription events
   switch (event.type) {
     case "checkout.session.completed": {
       const session = event.data.object as Stripe.Checkout.Session;
-      const userId = session.metadata?.userId;
+      const clerkId = session.metadata?.userId;
       
-      if (userId) {
-        // TODO: Update user subscription status in your database
-        console.log(`User ${userId} subscribed successfully`);
+      if (clerkId && session.subscription) {
+        // Get subscription details
+        const subscription = await stripe.subscriptions.retrieve(
+          session.subscription as string
+        );
+        
+        // Create or update user
+        const user = await prisma.user.upsert({
+          where: { clerkId },
+          create: {
+            clerkId,
+            email: session.customer_email,
+            stripeCustomerId: session.customer as string,
+          },
+          update: {
+            email: session.customer_email,
+            stripeCustomerId: session.customer as string,
+          },
+        });
+
+        // Create subscription record
+        await prisma.subscription.upsert({
+          where: { stripeSubscriptionId: subscription.id },
+          create: {
+            userId: user.id,
+            stripeSubscriptionId: subscription.id,
+            stripePriceId: subscription.items.data[0].price.id,
+            stripeCurrentPeriodEnd: new Date(subscription.current_period_end * 1000),
+            status: subscription.status,
+          },
+          update: {
+            stripePriceId: subscription.items.data[0].price.id,
+            stripeCurrentPeriodEnd: new Date(subscription.current_period_end * 1000),
+            status: subscription.status,
+          },
+        });
+
+        console.log(`User ${clerkId} subscribed successfully`);
       }
       break;
     }
     
     case "customer.subscription.updated": {
       const subscription = event.data.object as Stripe.Subscription;
-      // TODO: Handle subscription updates (plan changes, etc.)
+      
+      await prisma.subscription.update({
+        where: { stripeSubscriptionId: subscription.id },
+        data: {
+          stripePriceId: subscription.items.data[0].price.id,
+          stripeCurrentPeriodEnd: new Date(subscription.current_period_end * 1000),
+          status: subscription.status,
+        },
+      });
+      
       console.log(`Subscription ${subscription.id} updated:`, subscription.status);
       break;
     }
     
     case "customer.subscription.deleted": {
       const subscription = event.data.object as Stripe.Subscription;
-      // TODO: Handle subscription cancellation
+      
+      await prisma.subscription.update({
+        where: { stripeSubscriptionId: subscription.id },
+        data: { status: "canceled" },
+      });
+      
       console.log(`Subscription ${subscription.id} canceled`);
       break;
     }
     
     case "invoice.payment_failed": {
       const invoice = event.data.object as Stripe.Invoice;
-      // TODO: Handle failed payment (notify user, etc.)
+      
+      if (invoice.subscription) {
+        await prisma.subscription.update({
+          where: { stripeSubscriptionId: invoice.subscription as string },
+          data: { status: "past_due" },
+        });
+      }
+      
       console.log(`Payment failed for invoice ${invoice.id}`);
       break;
     }
