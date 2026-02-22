@@ -1,9 +1,22 @@
 "use client";
 
 import { useState } from "react";
-import { UserButton } from "@clerk/nextjs";
-import { Sparkles, Plus, RefreshCw, Copy, ExternalLink, Check, MessageSquare } from "lucide-react";
+import dynamic from "next/dynamic";
+import { Sparkles, Plus, RefreshCw, Copy, ExternalLink, Check, MessageSquare, User } from "lucide-react";
 import Link from "next/link";
+
+// Fallback UserButton component
+const FallbackUserButton = () => (
+  <div className="w-8 h-8 bg-gray-700 rounded-full flex items-center justify-center">
+    <User className="w-4 h-4 text-gray-400" />
+  </div>
+);
+
+// Dynamically import UserButton only on client side
+const UserButton = dynamic(
+  () => import("@clerk/nextjs").then((mod) => mod.UserButton).catch(() => FallbackUserButton),
+  { ssr: false, loading: () => <FallbackUserButton /> }
+);
 
 interface Post {
   id: string;
