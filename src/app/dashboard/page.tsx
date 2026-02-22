@@ -108,7 +108,9 @@ export default function Dashboard() {
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
             <Sparkles className="w-6 h-6 text-pink-500" />
-            <span className="font-bold text-xl text-white">InstaGrowth</span>
+            <span className="font-bold text-xl text-white">
+              InstaGrowth{isSubscribed && <span className="text-pink-400"> PRO</span>}
+            </span>
           </Link>
           <div className="flex items-center gap-4">
             <div className="text-sm text-gray-400">
