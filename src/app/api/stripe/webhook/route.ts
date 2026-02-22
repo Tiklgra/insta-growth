@@ -4,13 +4,18 @@ import { prisma } from "@/lib/prisma";
 
 // Mark as dynamic to prevent static generation
 export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "");
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET || "";
 
 export async function POST(req: NextRequest) {
+  if (!prisma) {
+    return NextResponse.json({ error: "Database not configured" }, { status: 500 });
+  }
+  
   const body = await req.text();
-  const signature = req.headers.get("stripe-signature")!;
+  const signature = req.headers.get("stripe-signature")!
 
   let event: Stripe.Event;
 
