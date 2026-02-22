@@ -5,6 +5,9 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "InstaGrowth - AI-Powered Instagram Engagement",
   description: "Generate authentic comments for your Instagram engagement strategy",
+  icons: {
+    icon: "/favicon.svg",
+  },
 };
 
 export default function RootLayout({
@@ -22,4 +25,3 @@ export default function RootLayout({
     </ClerkProvider>
   );
 }
-// 1771781922
