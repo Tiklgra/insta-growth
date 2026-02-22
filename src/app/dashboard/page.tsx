@@ -39,6 +39,22 @@ export default function Dashboard() {
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [usageCount, setUsageCount] = useState(12);
   const usageLimit = 200;
+  const [isSubscribing, setIsSubscribing] = useState(false);
+
+  const handleSubscribe = async () => {
+    setIsSubscribing(true);
+    try {
+      const res = await fetch("/api/stripe/checkout", { method: "POST" });
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      }
+    } catch (error) {
+      console.error("Subscription error:", error);
+    } finally {
+      setIsSubscribing(false);
+    }
+  };
 
   const addAccount = () => {
     if (newAccount && !targetAccounts.includes(newAccount)) {
@@ -146,6 +162,21 @@ export default function Dashboard() {
               <p className="text-xs text-gray-500 mt-2">
                 Resets on the 1st of each month
               </p>
+            </div>
+
+            {/* Upgrade CTA */}
+            <div className="bg-gradient-to-r from-pink-500/10 to-purple-500/10 border border-pink-500/20 rounded-2xl p-6">
+              <h2 className="font-semibold text-lg mb-2 text-white">Upgrade to Pro</h2>
+              <p className="text-gray-400 text-sm mb-4">
+                Get unlimited comments and premium features.
+              </p>
+              <button
+                onClick={handleSubscribe}
+                disabled={isSubscribing}
+                className="w-full bg-pink-600 hover:bg-pink-700 disabled:opacity-50 py-2 rounded-lg font-medium transition"
+              >
+                {isSubscribing ? "Loading..." : "Upgrade Now"}
+              </button>
             </div>
           </div>
 
