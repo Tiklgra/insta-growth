@@ -1,22 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
-import { getPrisma } from "@/lib/prisma";
+import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
-export const runtime = "nodejs";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "");
-const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET || "";
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
 export async function POST(req: NextRequest) {
-  const prisma = getPrisma();
-  if (!prisma) {
-    console.log("Database not configured, skipping subscription tracking");
-    return NextResponse.json({ received: true });
-  }
-  
   const body = await req.text();
   const signature = req.headers.get("stripe-signature")!;
+  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!;
 
   let event: Stripe.Event;
 
@@ -35,7 +28,7 @@ export async function POST(req: NextRequest) {
       if (clerkId && session.subscription) {
         const subscription = await stripe.subscriptions.retrieve(
           session.subscription as string
-        ) as any;
+        );
         
         const user = await prisma.user.upsert({
           where: { clerkId },
@@ -72,7 +65,7 @@ export async function POST(req: NextRequest) {
     }
     
     case "customer.subscription.updated": {
-      const subscription = event.data.object as any;
+      const subscription = event.data.object as Stripe.Subscription;
       
       await prisma.subscription.update({
         where: { stripeSubscriptionId: subscription.id },
@@ -86,7 +79,7 @@ export async function POST(req: NextRequest) {
     }
     
     case "customer.subscription.deleted": {
-      const subscription = event.data.object as any;
+      const subscription = event.data.object as Stripe.Subscription;
       
       await prisma.subscription.update({
         where: { stripeSubscriptionId: subscription.id },
@@ -96,7 +89,7 @@ export async function POST(req: NextRequest) {
     }
     
     case "invoice.payment_failed": {
-      const invoice = event.data.object as any;
+      const invoice = event.data.object as Stripe.Invoice;
       
       if (invoice.subscription) {
         await prisma.subscription.update({

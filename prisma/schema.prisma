@@ -4,6 +4,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model User {
@@ -23,7 +24,7 @@ model Subscription {
   stripeSubscriptionId   String   @unique
   stripePriceId          String
   stripeCurrentPeriodEnd DateTime
-  status                 String   // active, canceled, past_due, etc.
+  status                 String
   createdAt              DateTime @default(now())
   updatedAt              DateTime @updatedAt
 }
