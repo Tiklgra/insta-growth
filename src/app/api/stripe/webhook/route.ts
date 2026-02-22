@@ -25,9 +25,10 @@ export async function POST(req: NextRequest) {
       
       if (clerkId && session.subscription) {
         // Get subscription details
-        const subscription = await stripe.subscriptions.retrieve(
+        const subscriptionResponse = await stripe.subscriptions.retrieve(
           session.subscription as string
         );
+        const subscription = subscriptionResponse as unknown as Stripe.Subscription;
         
         // Create or update user
         const user = await prisma.user.upsert({
