@@ -100,7 +100,7 @@ export default function Dashboard() {
                     key={account} 
                     className="flex items-center justify-between bg-gray-800 rounded-lg px-3 py-2"
                   >
-                    <span className="text-sm">{account}</span>
+                    <span className="text-sm text-white">{account}</span>
                     <button 
                       onClick={() => removeAccount(account)}
                       className="text-gray-500 hover:text-red-400 transition"
@@ -116,7 +116,7 @@ export default function Dashboard() {
                   value={newAccount}
                   onChange={(e) => setNewAccount(e.target.value)}
                   placeholder="@username"
-                  className="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-pink-500"
+                  className="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:border-pink-500"
                   onKeyPress={(e) => e.key === "Enter" && addAccount()}
                 />
                 <button 
