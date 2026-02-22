@@ -1,6 +1,22 @@
 import Link from "next/link";
-import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 import { Sparkles, MessageSquare, TrendingUp, Shield } from "lucide-react";
+
+// Dynamic import for Clerk components (only load if configured)
+const isClerkConfigured = !!(
+  process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY &&
+  process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY.startsWith("pk_")
+);
+
+// Fallback components when Clerk is not configured
+const SignedIn = isClerkConfigured 
+  ? require("@clerk/nextjs").SignedIn 
+  : ({ children }: { children: React.ReactNode }) => null;
+const SignedOut = isClerkConfigured 
+  ? require("@clerk/nextjs").SignedOut 
+  : ({ children }: { children: React.ReactNode }) => <>{children}</>;
+const UserButton = isClerkConfigured 
+  ? require("@clerk/nextjs").UserButton 
+  : () => null;
 
 export default function Home() {
   return (
