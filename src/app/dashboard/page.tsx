@@ -75,7 +75,7 @@ export default function Dashboard() {
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
             <Sparkles className="w-6 h-6 text-pink-500" />
-            <span className="font-bold text-xl">InstaGrowth</span>
+            <span className="font-bold text-xl text-white">InstaGrowth</span>
           </Link>
           <div className="flex items-center gap-4">
             <div className="text-sm text-gray-400">
@@ -93,7 +93,7 @@ export default function Dashboard() {
           <div className="lg:col-span-1 space-y-6">
             {/* Target Accounts */}
             <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6">
-              <h2 className="font-semibold text-lg mb-4">Target Accounts</h2>
+              <h2 className="font-semibold text-lg mb-4 text-white">Target Accounts</h2>
               <div className="space-y-2 mb-4">
                 {targetAccounts.map(account => (
                   <div 
@@ -130,7 +130,7 @@ export default function Dashboard() {
 
             {/* Usage Stats */}
             <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6">
-              <h2 className="font-semibold text-lg mb-4">Usage This Month</h2>
+              <h2 className="font-semibold text-lg mb-4 text-white">Usage This Month</h2>
               <div className="mb-2">
                 <div className="flex justify-between text-sm mb-1">
                   <span className="text-gray-400">Comments Generated</span>
@@ -152,7 +152,7 @@ export default function Dashboard() {
           {/* Main Content - Queue */}
           <div className="lg:col-span-2">
             <div className="flex items-center justify-between mb-6">
-              <h1 className="text-2xl font-bold">Engagement Queue</h1>
+              <h1 className="text-2xl font-bold text-white">Engagement Queue</h1>
               <button 
                 onClick={refreshQueue}
                 disabled={isRefreshing}
@@ -166,7 +166,7 @@ export default function Dashboard() {
             {posts.length === 0 ? (
               <div className="bg-gray-900 border border-gray-800 rounded-2xl p-12 text-center">
                 <MessageSquare className="w-12 h-12 text-gray-700 mx-auto mb-4" />
-                <h3 className="text-lg font-medium mb-2">No posts in queue</h3>
+                <h3 className="text-lg font-medium mb-2 text-white">No posts in queue</h3>
                 <p className="text-gray-400 mb-4">
                   Add target accounts and click "Refresh Queue" to find posts to engage with.
                 </p>
