@@ -2,7 +2,9 @@ import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import Stripe from "stripe";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+export const dynamic = "force-dynamic";
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "");
 
 const PRICE_ID = process.env.STRIPE_PRICE_ID || "price_1T3da9A7GeLbk8JAshRJcNz2";
 
